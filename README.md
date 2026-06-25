@@ -74,14 +74,9 @@ Designed with simplicity and productivity in mind, MindVault provides a seamless
 MindVault/
 │
 ├── public/
-│   ├── style.css
+│   |── index.html
+    ├── style.css
 │   ├── script.js
-│
-├── data/
-│   └── notes.json
-│
-├── views/
-│   └── index.html
 │
 ├── server.js
 ├── package.json
