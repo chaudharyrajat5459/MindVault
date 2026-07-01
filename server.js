@@ -19,17 +19,17 @@ mongoose.connect(process.env.MONGO_URI)
 });
 
 /* GET ALL NOTES */
-app.get("/api/notes", async (req, res) => {
+app.get("/api/Notes", async (req, res) => {
     try {
         const notes = await Note.find().sort({ createdAt: -1 });
-        res.json(notes);
+        res.json(Notes);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
 /* ADD NOTE */
-app.post("/api/notes", async (req, res) => {
+app.post("/api/Notes", async (req, res) => {
     try {
         const { title, date, note } = req.body;
 
@@ -46,7 +46,7 @@ app.post("/api/notes", async (req, res) => {
 });
 
 /* DELETE NOTE */
-app.delete("/api/notes/:id", async (req, res) => {
+app.delete("/api/Notes/:id", async (req, res) => {
     try {
        const deletedNote = await Note.findByIdAndDelete(req.params.id);
 
