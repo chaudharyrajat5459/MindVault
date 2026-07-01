@@ -1,67 +1,69 @@
+require("dotenv").config();
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
+const mongoose = require("mongoose");
+const Note = require("./models/Note");
 const app = express();
-const PORT = 3000;
-const NOTES_FILE = "notes.json";
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
 app.use(express.static("public"));
 
-// Create notes.json if it doesn't exist
-if (!fs.existsSync(NOTES_FILE)) {
-    fs.writeFileSync(NOTES_FILE, "[]");
-}
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+.then(() => {
+    console.log("✅ MongoDB Connected");
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+    });
+})
+.catch((err) => {
+    console.error("❌ MongoDB Connection Error:", err);
+});
 
 /* GET ALL NOTES */
-
-app.get("/api/notes", (req, res) => {
-    const notes = JSON.parse(
-        fs.readFileSync(NOTES_FILE, "utf8")
-    );
-    res.json(notes);
+app.get("/api/notes", async (req, res) => {
+    try {
+        const notes = await Note.find().sort({ createdAt: -1 });
+        res.json(notes);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 /* ADD NOTE */
+app.post("/api/notes", async (req, res) => {
+    try {
+        const { title, date, note } = req.body;
 
-app.post("/api/notes", (req, res) => {
-    const { title, date, note } = req.body;
-    const notes = JSON.parse(
-        fs.readFileSync(NOTES_FILE, "utf8")
-    );
-    const newNote = {
-        id: Date.now(),
-        title,
-        date,
-        note
-    };
-    notes.push(newNote);
-    fs.writeFileSync(
-        NOTES_FILE,
-        JSON.stringify(notes, null, 2)
-    );
-    res.status(201).json(newNote);
+        const newNote = await Note.create({
+            title,
+            date,
+            note
+        });
+
+        res.status(201).json(newNote);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 /* DELETE NOTE */
+app.delete("/api/notes/:id", async (req, res) => {
+    try {
+       const deletedNote = await Note.findByIdAndDelete(req.params.id);
 
-app.delete("/api/notes/:id", (req, res) => {
-    const id = Number(req.params.id);
-    let notes = JSON.parse(
-        fs.readFileSync(NOTES_FILE, "utf8")
-    );
-    notes = notes.filter(
-        note => note.id !== id
-    );
-    fs.writeFileSync(
-        NOTES_FILE,
-        JSON.stringify(notes, null, 2)
-    );
-    res.json({
-        message: "Note deleted successfully"
+if (!deletedNote) {
+    return res.status(404).json({
+        message: "Note not found"
     });
+}
+
+res.json({
+    message: "Note deleted successfully"
 });
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
