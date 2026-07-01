@@ -50,7 +50,7 @@ function displayNotes(notes) {
                 </div>
                 <button
                     class="delete-btn"
-                    onclick="deleteNote(${note.id})"
+                    onclick="deleteNote('${note._id}')"
                 >
                     🗑 Delete
                 </button>
